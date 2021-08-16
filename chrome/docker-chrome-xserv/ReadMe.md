@@ -1,3 +1,58 @@
+Here explaination is done with respect to zoom app, but all other container follow same method to execute.
+
+1. start with ./run_zoom_container.sh script which will create the respective container and then once completes logs in to the container.
+
+2. once logged in to container then just run the respective apps by typing like below commands
+
+teams 
+
+zoom
+
+google-chrome
+
+3. below command can be used to log in to container or start the container
+
+sudo docker run -it --entrypoint /bin/bash local/zoomxserv:0.0.1
+
+then type 
+zoom
+
+To launch the zoom app.
+
+4. to connect to existing container need to use below command
+
+sudo docker exec -it zoomxserv /bin/bash
+
+then in the terminal type 
+zoom 
+To launch app.
+
+To view all the docker containers
+
+sudo docker ps -a
+
+To Delete specific container
+
+sudo docker rm -f zoomxserv
+
+To Remove all the docker containers use below command
+
+sudo docker system prune -a
+
+or 
+
+sudo docker rm -f $(sudo docker ps -aq)
+
+
+
+Troubleshoot: 
+
+If there is issue in launching the app then DISPLAY environment value might be Null or invalid.
+So either close the terminal and then launch new one and then zoom or any other app to launch. 
+
+Most of the launching issues are there because of Invalid DISPLAY value for the environment variable.
+
+--------------------------------------------------------------------------------------------------
 
 1. Xserver Side setup on ubuntu platform:
 --------------------------------------------
