@@ -1,0 +1,108 @@
+From ubuntu:20.04
+
+ENV DISPLAY=$DISPLAY
+ENV DEBIAN_FRONTEND=noninteractive
+#ENV DISTRIBUTION_DIR /home/apps
+ENV INITSYSTEM on
+
+RUN export DEBIAN_FRONTEND=noninteractive
+RUN apt-get update
+RUN apt-get install -y sudo
+RUN apt-get install -y apt-utils
+RUN apt-get install -y gedit
+#RUN apt install -y xeyes
+#
+#
+#ENV DISPLAY=192.168.0.14:7.0
+
+RUN adduser --disabled-password --gecos '' apps
+RUN adduser apps sudo
+RUN adduser apps root
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+#RUN useradd apps
+RUN mkdir -p /home/apps && chown apps:apps /home/apps
+
+WORKDIR /home/apps
+
+#RUN set-variable -name DISPLAY -value 192.168.0.13:7.0
+RUN apt-get install -y iputils-ping
+RUN apt-get install -y wget
+RUN apt-get install -qq libglu1-mesa-dev libx11-xcb-dev '^libxcb*'
+#copying the debian incase online downloading fails in the container.
+#64 bit debian
+COPY zoom_amd64.deb /home/apps/zoom_amd64.deb 
+
+#32 bit debian
+#COPY zoom_i386.deb /home/apps/zoom_i386.deb
+
+#RUN wget https://dl.google.com/linux/direct/google-chrome-#stable_current_amd64.deb
+#RUN wget https://zoom.us/client/latest/zoom_amd64.deb
+#Right now its failing so disabling the download
+#RUN wget https://zoom.us/client/latest/zoom_i386.deb; exit 0
+
+#PulseAudio install start-------------------------------
+RUN apt-get update && \
+     apt-get install -y pulseaudio alsa-utils mplayer wget
+     
+COPY Enable_Audio.sh /opt/bin/Enable_Audio.sh
+
+RUN adduser root pulse-access
+
+RUN adduser apps pulse-access
+
+RUN groupmod -g 92 audio
+RUN groupmod -g 91 video
+
+RUN rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse
+
+# Start pulseaudio as system wide daemon; for debugging it helps to start in non-daemon mode
+RUN echo "Pulseaudio setting flags: ";
+RUN sudo pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit --disallow-module-loading
+
+# Create a virtual audio source; fixed by adding source master and format
+RUN echo "Creating virtual audio source: ";
+
+RUN echo "exit-idle-time = -1" >> /etc/pulse/daemon.conf
+
+#RUN wget https://mp3d.jamendo.com/download/track/15655/mp32/ -O test.mp3
+
+CMD pulseaudio --start
+
+# Use dpkg installation for stable working scenario
+RUN dpkg -i ./zoom_amd64.deb; apt-get -fy install
+
+#CMD pulseaudio --start && while : ; do mplayer -ao pulse test.mp3; done
+
+#64 bit debian
+#RUN apt install -fy ./zoom_amd64.deb; apt-get -fy install
+
+#32 bit debian
+#RUN apt install -fy ./zoom_i386.deb; apt-get -fy install
+
+RUN echo "Calling Enable_Audio script: ";
+#ENTRYPOINT /opt/bin/Enable_Audio.sh
+
+#RUN /opt/bin/Enable_Audio.sh
+
+#PulseAudio install end-------------------------------
+
+#RUN apt install ./zoom_amd64.deb
+#RUN dpkg -i ./zoom_i386.deb; apt-get -fy install
+
+#RUN apt install -fy ./zoom_i386.deb; apt-get -fy install
+
+#COPY zoom_amd64.deb /home/apps
+# sudo apt remove zoom
+#RUN touch ~/.config/zoomus.conf
+
+
+#RUN dpkg -i /home/apps/zoom_amd64.deb; apt-get -fy install
+
+#ENTRYPOINT /bin/bash"
+CMD ["/usr/bin/zoom"]
+
+#CMD ["/usr/bin/chrome","--no-sandbox","--no-first-run","--no-default-browser-#check","https://space.bullapse.com/space"]
+#,"--headless"]
+#CMD ["/usr/bin/gedit"]
+#CMD ["/usr/bin/xeyes"]

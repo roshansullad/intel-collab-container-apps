@@ -1,0 +1,130 @@
+From ubuntu:20.04
+
+RUN apt-get update
+#RUN apt install -y xeyes
+#
+#
+#ENV DISPLAY=192.168.0.14:7.0
+
+ENV DISPLAY=$DISPLAY
+#ENV DISPLAY=":1"
+
+ENV DEBIAN_FRONTEND=noninteractive
+#ENV DISTRIBUTION_DIR /home/apps
+ENV INITSYSTEM on
+
+RUN apt install -y sudo
+
+RUN adduser --disabled-password --gecos '' apps
+RUN adduser apps sudo
+RUN chmod u+s /usr/bin/su
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+#USER apps
+#RUN useradd apps
+RUN mkdir -p /home/apps && chown apps:apps /home/apps
+
+WORKDIR /home/apps
+
+#RUN set-variable -name DISPLAY -value 192.168.0.13:7.0
+
+RUN apt-get install -y apt-utils
+RUN apt-get install -y iputils-ping
+RUN apt-get install -y wget
+RUN apt-get install -y xauth
+RUN apt-get install -y curl
+RUN apt-get install -y gedit
+#RUN apt-get install -y snapd
+#RUN sudo snap install teams
+RUN sudo apt-get update
+#CMD teams
+#ENTRYPOINT ["/usr/bin/teams"]
+
+#RUN wget https://dl.google.com/linux/direct/google-chrome-#stable_current_amd64.deb
+#RUN wget https://zoom.us/client/latest/zoom_amd64.deb
+
+COPY teams_1.4.00.13653_amd64.deb /home/apps
+
+RUN wget https://packages.microsoft.com/repos/ms-teams/pool/main/t/teams/teams_1.3.00.5153_amd64.deb
+
+#RUN curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+#RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/ms-teams stable main" > /etc/#apt/sources.list.d/teams.list
+#RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/ms-teams stable main" | sudo tee /etc/apt/sources.list.d/teams.list
+
+RUN apt-get update
+
+#RUN apt install teams
+
+#PulseAudio install start-------------------------------
+RUN apt-get update && \
+     apt-get install -y pulseaudio alsa-utils mplayer wget
+
+RUN adduser root pulse-access
+
+RUN adduser apps pulse-access
+
+RUN echo "exit-idle-time = -1" >> /etc/pulse/daemon.conf
+
+#RUN wget https://mp3d.jamendo.com/download/track/15655/mp32/ -O test.mp3
+
+RUN groupmod -g 92 audio
+RUN groupmod -g 91 video
+
+CMD pulseaudio --start
+
+#CMD pulseaudio --start && while : ; do mplayer -ao pulse test.mp3; done
+#PulseAudio install end-------------------------------
+
+RUN chmod -R 777 *
+
+#RUN apt-get update
+#RUN apt install ./zoom_amd64.deb
+#RUN dpkg -i ./zoom_amd64.deb; apt-get -fy install
+
+RUN apt install -fy
+#RUN dpkg -i ./teams_1.3.00.5153_amd64.deb; apt-get -fy install
+#RUN dpkg -i ./teams_1.4.00.13653_amd64.deb; apt-get -fy install
+RUN apt install -fy ./teams_1.4.00.13653_amd64.deb
+
+#RUN dpkg-reconfigure --force teams
+#RUN apt install -fy ./teams_1.3.00.5153_amd64.deb; apt-get -fy install
+#COPY zoom_amd64.deb /home/apps
+# sudo apt remove zoom
+#RUN dpkg -i /home/apps/zoom_amd64.deb; apt-get -fy install
+
+RUN echo /usr/bin/teams
+RUN echo teams
+RUN echo sudo /usr/bin/teams
+RUN echo env
+RUN echo printenv
+
+CMD teams
+CMD ["env"]
+CMD ["printenv"]
+CMD ["/usr/bin/teams"]
+
+#ENTRYPOINT ["/bin/bash"]
+
+#*************************************For Logging*************************
+# Run the wrapper script (to keep the container alive)
+COPY keepalive.sh /usr/bin/keepalive.sh
+RUN chmod +x /usr/bin/keepalive.sh
+
+# Create the pesudo log file to point to stdout
+RUN ln -sf /dev/stdout /var/log/test.log
+
+# Create a cronjob to echo into the logfile just created
+RUN echo '* * * * * root `date` > /var/log/test.log' > /etc/crontab
+
+#ENTRYPOINT ["/usr/bin/keepalive.sh"]
+#*************************************For Logging*************************
+
+#sudo docker exec  -it teamsxserv /bin/sh
+#cd /tmp/.X11-unix && for x in X*; do echo ":${x#X}"; done
+
+#CMD ["/usr/bin/chrome","--no-sandbox","--no-first-run","--no-default-browser-#check","https://#space.bullapse.com/space"]
+#,"--headless"]
+#CMD ["/usr/bin/gedit"]
+#CMD ["/usr/bin/xeyes"]
+
+#sudo docker events --filter container=da21b1412c08
+

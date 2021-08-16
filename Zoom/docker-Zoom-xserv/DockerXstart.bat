@@ -1,0 +1,1 @@
+"C:\Program Files\PuTTY\putty.exe" -ssh -X 52.249.178.57 -l demo -pw DellWyse#123

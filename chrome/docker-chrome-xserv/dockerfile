@@ -1,0 +1,70 @@
+From ubuntu:20.04
+
+RUN apt-get update
+#RUN apt install -y xeyes
+#
+#
+#ENV DISPLAY=192.168.0.14:7.0
+
+ENV DISPLAY=$DISPLAY
+ENV DEBIAN_FRONTEND=noninteractive
+#ENV DISTRIBUTION_DIR /home/apps
+ENV INITSYSTEM on
+
+RUN apt install -y sudo
+
+RUN adduser --disabled-password --gecos '' apps
+RUN adduser apps sudo
+RUN chmod u+s /usr/bin/su
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+#RUN useradd apps
+RUN mkdir -p /home/apps && chown apps:apps /home/apps
+WORKDIR /home/apps
+
+#RUN set-variable -name DISPLAY -value 192.168.0.13:7.0
+
+RUN apt-get install -y apt-utils
+RUN apt-get install -y iputils-ping
+RUN apt-get install -y wget
+RUN apt-get install -y xauth
+RUN apt-get install -y curl
+RUN apt-get install -y gedit
+RUN sudo apt-get update
+
+RUN groupmod -g 92 audio
+RUN groupmod -g 91 video
+
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+
+
+#PulseAudio install start-------------------------------
+RUN apt-get update && \
+     apt-get install -y pulseaudio alsa-utils mplayer wget
+
+RUN adduser root pulse-access
+
+RUN adduser apps pulse-access
+
+RUN echo "exit-idle-time = -1" >> /etc/pulse/daemon.conf
+
+#RUN wget https://mp3d.jamendo.com/download/track/15655/mp32/ -O test.mp3
+
+RUN groupmod -g 92 audio
+RUN groupmod -g 91 video
+
+CMD pulseaudio --start
+
+#CMD pulseaudio --start && while : ; do mplayer -ao pulse test.mp3; done
+#PulseAudio install end-------------------------------
+
+RUN chmod -R 777 *
+
+# Use dpkg installation for stable working scenario
+RUN dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install
+
+
+CMD ["/usr/bin/google-chrome","--no-sandbox","--no-first-run","--no-default-browser-check","https://www.youtube.com"]
+#,"--headless"]
+#CMD ["/usr/bin/gedit"]
+#CMD ["/usr/bin/xeyes"]
